@@ -4,7 +4,7 @@ import util
 import StringIO
 import settings
 if settings.COINDAEMON_ALGO == 'scrypt':
-    import ltc_scrypt
+    import vtc_scrypt
 elif settings.COINDAEMON_ALGO  == 'scrypt-jane':
     scryptjane = __import__(settings.SCRYPTJANE_NAME) 
 elif settings.COINDAEMON_ALGO == 'quark':
@@ -239,7 +239,7 @@ class TemplateRegistry(object):
     
         # 4. Reverse header and compare it with target of the user
         if settings.COINDAEMON_ALGO == 'scrypt':
-            hash_bin = ltc_scrypt.getPoWHash(''.join([ header_bin[i*4:i*4+4][::-1] for i in range(0, 20) ]))
+            hash_bin = vtc_scrypt.getPoWHash(''.join([ header_bin[i*4:i*4+4][::-1] for i in range(0, 20) ]))
         elif settings.COINDAEMON_ALGO  == 'scrypt-jane':
         	if settings.SCRYPTJANE_NAME == 'vtc_scrypt':
             	     hash_bin = scryptjane.getPoWHash(''.join([ header_bin[i*4:i*4+4][::-1] for i in range(0, 20) ]))

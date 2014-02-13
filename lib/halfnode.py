@@ -22,7 +22,7 @@ log.debug("Got to Halfnode")
 
 if settings.COINDAEMON_ALGO == 'scrypt':
     log.debug("########################################### Loading LTC Scrypt #########################################################")
-    import ltc_scrypt
+    import vtc_scrypt
 elif settings.COINDAEMON_ALGO == 'scrypt-jane':
     __import__(settings.SCRYPTJANE_NAME)
     log.debug("########################################### LoadingScrypt jane #########################################################")
@@ -281,7 +281,7 @@ class CBlock(object):
                r.append(struct.pack("<I", self.nTime))
                r.append(struct.pack("<I", self.nBits))
                r.append(struct.pack("<I", self.nNonce))
-               self.scrypt = uint256_from_str(ltc_scrypt.getPoWHash(''.join(r)))
+               self.scrypt = uint256_from_str(vtc_scrypt.getPoWHash(''.join(r)))
            return self.scrypt
     elif settings.COINDAEMON_ALGO == 'quark':
          def calc_quark(self):
