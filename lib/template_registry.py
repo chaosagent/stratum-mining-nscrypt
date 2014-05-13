@@ -3,8 +3,10 @@ import binascii
 import util
 import StringIO
 import settings
-if settings.COINDAEMON_ALGO == 'scrypt':
+if settings.COINDAEMON_ALGO == 'scryptn':
     import vtc_scrypt
+elif settings.COINDAEMON_ALGO == 'scrypt':
+    import ltc_scrypt
 elif settings.COINDAEMON_ALGO  == 'scrypt-jane':
     scryptjane = __import__(settings.SCRYPTJANE_NAME) 
 elif settings.COINDAEMON_ALGO == 'quark':
@@ -40,7 +42,7 @@ class TemplateRegistry(object):
     on valid block templates, provide internal interface for stratum
     service and implements block validation and submits.'''
     
-    def __init__(self, block_template_class, coinbaser, bitcoin_rpc, instance_id,
+    def __init__(self, block_template_class, coinbaser, coin_rpc, instance_id,
                  on_template_callback, on_block_callback):
         self.prevhashes = {}
         self.jobs = weakref.WeakValueDictionary()
@@ -51,7 +53,7 @@ class TemplateRegistry(object):
         log.debug("Got to Template Registry")
         self.coinbaser = coinbaser
         self.block_template_class = block_template_class
-        self.bitcoin_rpc = bitcoin_rpc
+        self.coin_rpc = coin_rpc
         self.on_block_callback = on_block_callback
         self.on_template_callback = on_template_callback
         
@@ -127,7 +129,7 @@ class TemplateRegistry(object):
         self.update_in_progress = True
         self.last_update = Interfaces.timestamper.time()
         
-        d = self.bitcoin_rpc.getblocktemplate()
+        d = self.coin_rpc.getblocktemplate()
         d.addCallback(self._update_block)
         d.addErrback(self._update_block_failed)
         
@@ -150,7 +152,7 @@ class TemplateRegistry(object):
     
     def diff_to_target(self, difficulty):
         '''Converts difficulty to target'''
-        if settings.COINDAEMON_ALGO == 'scrypt' or 'scrypt-jane':
+        if settings.COINDAEMON_ALGO == 'scryptn' or 'scrypt' or 'scrypt-jane':
             diff1 = 0x0000ffff00000000000000000000000000000000000000000000000000000000
         elif settings.COINDAEMON_ALGO == 'quark':
             diff1 = 0x000000ffff000000000000000000000000000000000000000000000000000000
@@ -238,13 +240,10 @@ class TemplateRegistry(object):
         header_bin = job.serialize_header(merkle_root_int, ntime_bin, nonce_bin)
     
         # 4. Reverse header and compare it with target of the user
-        if settings.COINDAEMON_ALGO == 'scrypt':
+        if settings.COINDAEMON_ALGO == 'scryptn' or 'scrypt':
             hash_bin = vtc_scrypt.getPoWHash(''.join([ header_bin[i*4:i*4+4][::-1] for i in range(0, 20) ]))
         elif settings.COINDAEMON_ALGO  == 'scrypt-jane':
-        	if settings.SCRYPTJANE_NAME == 'vtc_scrypt':
-            	     hash_bin = scryptjane.getPoWHash(''.join([ header_bin[i*4:i*4+4][::-1] for i in range(0, 20) ]))
-      		else: 
-      		     hash_bin = scryptjane.getPoWHash(''.join([ header_bin[i*4:i*4+4][::-1] for i in range(0, 20) ])), int(ntime, 16)
+			 hash_bin = scryptjane.getPoWHash(''.join([ header_bin[i*4:i*4+4][::-1] for i in range(0, 20) ])), int(ntime, 16)
         elif settings.COINDAEMON_ALGO == 'quark':
             hash_bin = quark_hash.getPoWHash(''.join([ header_bin[i*4:i*4+4][::-1] for i in range(0, 20) ]))
 	elif settings.COINDAEMON_ALGO == 'skeinhash':
@@ -255,7 +254,7 @@ class TemplateRegistry(object):
         hash_int = util.uint256_from_str(hash_bin)
         scrypt_hash_hex = "%064x" % hash_int
         header_hex = binascii.hexlify(header_bin)
-        if settings.COINDAEMON_ALGO == 'scrypt' or settings.COINDAEMON_ALGO == 'scrypt-jane':
+        if settings.COINDAEMON_ALGO == 'scryptn' or 'scrypt' or 'scrypt-jane':
             header_hex = header_hex+"000000800000000000000000000000000000000000000000000000000000000000000000000000000000000080020000"
         elif settings.COINDAEMON_ALGO == 'quark':
             header_hex = header_hex+"000000800000000000000000000000000000000000000000000000000000000000000000000000000000000080020000"
@@ -294,7 +293,7 @@ class TemplateRegistry(object):
                             
             # 7. Submit block to the network
             serialized = binascii.hexlify(job.serialize())
-	    on_submit = self.bitcoin_rpc.submitblock(serialized, block_hash_hex, scrypt_hash_hex)
+	    on_submit = self.coin_rpc.submitblock(serialized, block_hash_hex, scrypt_hash_hex)
             if on_submit:
                 self.update_block()
 

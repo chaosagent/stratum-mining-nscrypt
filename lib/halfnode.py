@@ -20,9 +20,12 @@ import lib.logger
 log = lib.logger.get_logger('halfnode')
 log.debug("Got to Halfnode")
 
-if settings.COINDAEMON_ALGO == 'scrypt':
-    log.debug("########################################### Loading LTC Scrypt #########################################################")
+if settings.COINDAEMON_ALGO == 'scryptn':
+    log.debug("########################################### Loading VTC Scrypt #########################################################")
     import vtc_scrypt
+elif settings.COINDAEMON_ALGO == 'scrypt':
+    log.debug("########################################### Loading LTC Scrypt #########################################################")
+    import ltc_scrypt
 elif settings.COINDAEMON_ALGO == 'scrypt-jane':
     __import__(settings.SCRYPTJANE_NAME)
     log.debug("########################################### LoadingScrypt jane #########################################################")
@@ -233,7 +236,7 @@ class CBlock(object):
         self.nNonce = 0
         self.vtx = []
         self.sha256 = None
-        if settings.COINDAEMON_ALGO == 'scrypt':
+        if settings.COINDAEMON_ALGO == 'scryptn' or 'scrypt':
             self.scrypt= None
         elif settings.COINDAEMON_ALGO == 'scrypt-jane':
             self.scryptjane = None
@@ -271,7 +274,7 @@ class CBlock(object):
         else: pass
         return ''.join(r)
 
-    if settings.COINDAEMON_ALGO == 'scrypt':
+    if settings.COINDAEMON_ALGO == 'scryptn':
        def calc_scrypt(self):
            if self.scrypt is None:
                r = []
@@ -282,6 +285,18 @@ class CBlock(object):
                r.append(struct.pack("<I", self.nBits))
                r.append(struct.pack("<I", self.nNonce))
                self.scrypt = uint256_from_str(vtc_scrypt.getPoWHash(''.join(r)))
+           return self.scrypt
+    elif settings.COINDAEMON_ALGO == 'scrypt':
+       def calc_scrypt(self):
+           if self.scrypt is None:
+               r = []
+               r.append(struct.pack("<i", self.nVersion))
+               r.append(ser_uint256(self.hashPrevBlock))
+               r.append(ser_uint256(self.hashMerkleRoot))
+               r.append(struct.pack("<I", self.nTime))
+               r.append(struct.pack("<I", self.nBits))
+               r.append(struct.pack("<I", self.nNonce))
+               self.scrypt = uint256_from_str(ltc_scrypt.getPoWHash(''.join(r)))
            return self.scrypt
     elif settings.COINDAEMON_ALGO == 'quark':
          def calc_quark(self):
@@ -334,7 +349,7 @@ class CBlock(object):
 
 
     def is_valid(self):
-        if settings.COINDAEMON_ALGO == 'scrypt':
+        if settings.COINDAEMON_ALGO == 'scryptn' or 'scrypt':
             self.calc_scrypt()
         elif settings.COINDAEMON_ALGO == 'quark':
             self.calc_quark()
@@ -346,8 +361,8 @@ class CBlock(object):
             self.calc_sha256()
 
         target = uint256_from_compact(self.nBits)
-
-        if settings.COINDAEMON_ALGO == 'scrypt':
+		
+        if settings.COINDAEMON_ALGO == 'scryptn' or 'scrypt':
             if self.scrypt > target:
                 return False
         elif settings.COINDAEMON_ALGO == 'quark':
