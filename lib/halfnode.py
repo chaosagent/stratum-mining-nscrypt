@@ -554,7 +554,7 @@ class msg_alert(object):
     def __repr__(self):
         return "msg_alert()"
     
-class BitcoinP2PProtocol(Protocol):
+class CoinP2PProtocol(Protocol):
     messagemap = {
         "version": msg_version,
         "verack": msg_verack,

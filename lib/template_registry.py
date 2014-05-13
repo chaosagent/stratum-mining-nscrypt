@@ -186,7 +186,7 @@ class TemplateRegistry(object):
                      difficulty):
         '''Check parameters and finalize block template. If it leads
            to valid block candidate, asynchronously submits the block
-           back to the bitcoin network.
+           back to the coin network.
         
             - extranonce1_bin is binary. No checks performed, it should be from session data
             - job_id, extranonce2, ntime, nonce - in hex form sent by the client

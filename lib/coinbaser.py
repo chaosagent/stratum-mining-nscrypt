@@ -9,7 +9,7 @@ log = lib.logger.get_logger('coinbaser')
 # TODO: Add on_* hooks in the app
     
 class SimpleCoinbaser(object):
-    '''This very simple coinbaser uses constant bitcoin address
+    '''This very simple coinbaser uses constant coin address
     for all generated blocks.'''
     
     def __init__(self, coin_rpc, address):
