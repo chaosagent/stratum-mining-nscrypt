@@ -37,7 +37,7 @@ def setup(on_startup):
     # Check the results:
     #         - getblocktemplate is avalible        (Die if not)
     #         - we are not still downloading the blockchain        (Sleep)
-    log.info("Connecting to litecoind...")
+    log.info("Connecting to coind...")
     while True:
         try:
             result = (yield coin_rpc.check_submitblock())
@@ -58,7 +58,7 @@ def setup(on_startup):
         try:
             result = (yield coin_rpc.getblocktemplate())
             if isinstance(result, dict):
-                # litecoind implements version 1 of getblocktemplate
+                # Need to know version of coind getblocktemplate
                 if result['version'] >= 1:
                     result = (yield coin_rpc.getdifficulty())
                     if isinstance(result,dict):

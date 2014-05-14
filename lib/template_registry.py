@@ -42,7 +42,7 @@ class TemplateRegistry(object):
     on valid block templates, provide internal interface for stratum
     service and implements block validation and submits.'''
     
-    def __init__(self, block_template_class, coinbaser, coin_rpc, instance_id,
+    def __init__(self, block_template_class, coinbaser, coin_rpc, merged_coin_rpcs, instance_id,
                  on_template_callback, on_block_callback):
         self.prevhashes = {}
         self.jobs = weakref.WeakValueDictionary()
@@ -54,6 +54,7 @@ class TemplateRegistry(object):
         self.coinbaser = coinbaser
         self.block_template_class = block_template_class
         self.coin_rpc = coin_rpc
+		self.merged_coin_rpcs = merged_coin_rpcs
         self.on_block_callback = on_block_callback
         self.on_template_callback = on_template_callback
         
@@ -76,7 +77,7 @@ class TemplateRegistry(object):
         log.debug("Getting Laat Template")
         return self.last_block.broadcast_args
         
-    def add_template(self, block,block_height):
+    def add_template(self, block, block_height):
         '''Adds new template to the registry.
         It also clean up templates which should
         not be used anymore.'''
@@ -129,13 +130,35 @@ class TemplateRegistry(object):
         self.update_in_progress = True
         self.last_update = Interfaces.timestamper.time()
         
+		for merged_coin_rpc in self.merged_coin_rpcs:
+			d = merged_coin_rpc.getblocktemplate()
+			d.addCallback(self._update_merged_block)
+			d.addErrback(self._update_merged_block_failed)
+			
         d = self.coin_rpc.getblocktemplate()
         d.addCallback(self._update_block)
         d.addErrback(self._update_block_failed)
         
+    def _update_merged_block_failed(self, failure):
+        log.error(str(failure))
+        self.update_in_progress = False
+        
     def _update_block_failed(self, failure):
         log.error(str(failure))
         self.update_in_progress = False
+        
+    def _update_merged_block(self, data):
+        start = Interfaces.timestamper.time()
+                
+        template = self.block_template_class(Interfaces.timestamper, self.coinbaser, JobIdGenerator.get_new_id())
+        log.info(template.fill_from_rpc(data))
+        self.add_template(template,data['height'])
+
+        log.info("Update finished, %.03f sec, %d txes" % \
+                    (Interfaces.timestamper.time() - start, len(template.vtx)))
+        
+        self.update_in_progress = False        
+        return data
         
     def _update_block(self, data):
         start = Interfaces.timestamper.time()
