@@ -82,3 +82,7 @@ Please research and attempt to debug first.
 #License
 This software is provides AS-IS without any warranties of any kind. Please use at your own risk. 
 
+#The Key
+The key to implementing merged mining in this fork lies in this commit: The key to the puzzle is in this commit: https://github.com/simplecrypto/powerpool/commit/683c4265b421182b740472a8044dc9edfae36a0e#diff-995ff19087adf7c60ee7f0b2dbc17f37R26
+I have been trying to merge it in, but my limited knowledge of python syntax has slowed me down.
+
