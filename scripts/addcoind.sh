@@ -9,17 +9,22 @@ import time
 
 start = time.time()
 
-parser = argparse.ArgumentParser(description='Refresh the config of the Stratum instance.')
+parser = argparse.ArgumentParser(description='Add a coind server to the Stratum instance.')
 parser.add_argument('--password', dest='password', type=str, help='use admin password from Stratum server config')
 parser.add_argument('--host', dest='host', type=str, default='localhost', help='hostname of Stratum mining instance')
 parser.add_argument('--port', dest='port', type=int, default=3333, help='port of Stratum mining instance')
+parser.add_argument('--lport', dest='lport', type=int, default=8332, help='port of coind instance')
+parser.add_argument('--lhost', dest='lhost', type=str, default='localhost', help='hostname of coind instance')
+parser.add_argument('--luser', dest='luser', type=str, default='user', help='user for the coind instance')
+parser.add_argument('--lpassword', dest='lpassword', type=str, default='somelargepassword', help='password for the user on the coind instance')
+
 args = parser.parse_args()
 
 if args.password == None:
 	parser.print_help()
 	sys.exit()
 	
-message = {'id': 1, 'method': 'mining.refresh_config', 'params': []}
+message = {'id': 1, 'method': 'mining.add_coind', 'params': [args.password, args.lhost, args.lport, args.luser, args.lpassword]}
 
 try:
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -28,7 +33,7 @@ try:
     data = s.recv(16000)
     s.close()
 except IOError:
-    print "Refresh Config: Cannot connect to the pool"
+    print "addcoind: Cannot connect to the pool"
     sys.exit()
 
 for line in data.split("\n"):
@@ -39,8 +44,8 @@ for line in data.split("\n"):
     message = json.loads(line)
     if message['id'] == 1:
         if message['result'] == True:
-	        print "Refresh Config: done in %.03f sec" % (time.time() - start)
+	        print "addcoind: done in %.03f sec" % (time.time() - start)
         else:
-            print "Refresh Config: Error during request:", message['error'][1]
+            print "addcoind: Error during request:", message['error'][1]
     else:
-        print "Refresh Config: Unexpected message from the server:", message
+        print "addcoind: Unexpected message from the server:", message

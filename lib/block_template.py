@@ -50,12 +50,9 @@ class BlockTemplate(halfnode.CBlock):
         # There may be registered also invalid shares inside!
         self.submits = [] 
                 
-    def fill_from_rpc(self, data):
+    def fill_from_rpc(self, data, extraTxs=None):
         '''Convert getblocktemplate result into BlockTemplate instance'''
         
-        #txhashes = [None] + [ binascii.unhexlify(t['hash']) for t in data['transactions'] ]
-        txhashes = [None] + [ util.ser_uint256(int(t['hash'], 16)) for t in data['transactions'] ]
-        mt = merkletree.MerkleTree(txhashes)
         if settings.COINDAEMON_Reward == 'POW':
             coinbase = CoinbaseTransactionPOW(self.timestamper, self.coinbaser, data['coinbasevalue'],
                                               data['coinbaseaux']['flags'], data['height'],
@@ -73,11 +70,16 @@ class BlockTemplate(halfnode.CBlock):
         self.nTime = 0
         self.nNonce = 0
         self.vtx = [ coinbase, ]
-        
+		
+        txhashes = []
+		
         for tx in data['transactions']:
             t = halfnode.CTransaction()
             t.deserialize(StringIO.StringIO(binascii.unhexlify(tx['data'])))
+			txhashes.append(util.ser_uint256(int(tx['hash'], 1	6)))
             self.vtx.append(t)
+			
+        mt = merkletree.MerkleTree(txhashes)
             
         self.curtime = data['curtime']
         self.timedelta = self.curtime - int(self.timestamper.time()) 

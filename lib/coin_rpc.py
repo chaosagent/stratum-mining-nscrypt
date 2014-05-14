@@ -9,13 +9,13 @@ from twisted.web import client
 import time
 
 import lib.logger
-log = lib.logger.get_logger('bitcoin_rpc')
+log = lib.logger.get_logger('coin_rpc')
 
-class BitcoinRPC(object):
+class CoinRPC(object):
     
     def __init__(self, host, port, username, password):
-        log.debug("Got to Bitcoin RPC")
-        self.bitcoin_url = 'http://%s:%d' % (host, port)
+        log.debug("Got to Coin RPC")
+        self.coin_url = 'http://%s:%d' % (host, port)
         self.credentials = base64.b64encode("%s:%s" % (username, password))
         self.headers = {
             'Content-Type': 'text/json',
@@ -27,7 +27,7 @@ class BitcoinRPC(object):
     def _call_raw(self, data):
         client.Headers
         return client.getPage(
-            url=self.bitcoin_url,
+            url=self.coin_url,
             method='POST',
             headers=self.headers,
             postdata=data,

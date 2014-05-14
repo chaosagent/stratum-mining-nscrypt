@@ -94,7 +94,7 @@ BROWSER_ENABLE = True
 
 # ******************** *COIND SETTINGS ************
 
-# Hostname and credentials for one trusted Bitcoin node ("Satoshi's client").
+# Hostname and credentials for one trusted coind node ("Satoshi's client").
 # Stratum uses both P2P port (which is 8333 everytime) and RPC port
 COINDAEMON_TRUSTED_HOST = '127.0.0.1'
 COINDAEMON_TRUSTED_PORT = 8332 # RPC port
@@ -109,7 +109,7 @@ COINDAEMON_TRUSTED_PASSWORD = '***somepassword***'
 # Until AutoReward Selecting Code has been implemented the below options are us$
 # For Reward type there is POW and POS. please ensure you choose the currect ty$
 # For SHA256 PoS Coins which support TX Messages please enter yes in the TX sel$
-COINDAEMON_ALGO = 'scrypt'
+COINDAEMON_ALGO = 'scryptn'
 COINDAEMON_Reward = 'POW'
 COINDAEMON_SHA256_TX = 'yes'
 
